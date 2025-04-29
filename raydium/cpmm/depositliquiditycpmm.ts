@@ -25,7 +25,7 @@ export const deposit = async () => {
     poolKeys = data.poolKeys
   }
 
-  const uiInputAmount = '100000' // JAIL amount
+  const uiInputAmount = '10000' // JAIL amount
   console.log('Pool Info:', {
     mintA: poolInfo.mintA,
     mintB: poolInfo.mintB,

@@ -9,7 +9,7 @@ import { isValidCpmm } from './utils'
 import { RAYDIUM_CPMM_POOL_ID } from '../../constants'
 
 export const depositAndLockLiquidity = async () => {
-  const raydium = await initSdk()
+  const raydium = await initSdk({ loadToken: true })
 
   // JAIL - SOL pool
   const poolId = RAYDIUM_CPMM_POOL_ID
@@ -26,15 +26,26 @@ export const depositAndLockLiquidity = async () => {
     poolKeys = data.poolKeys
   }
 
-  // Step 1: Deposit Liquidity
-  const uiInputAmount = '10000' // JAIL amount
-  console.log('Pool Info:', {
-    mintA: poolInfo.mintA,
-    mintB: poolInfo.mintB,
-    decimals: poolInfo.mintB.decimals
+  // Get JAIL token balance
+  await raydium.account.fetchWalletTokenAccounts()
+  const jailTokenAccount = raydium.account.tokenAccounts.find(
+    (a) => a.mint.toBase58() === poolInfo.mintB.address
+  )
+  
+  if (!jailTokenAccount) {
+    throw new Error('No JAIL tokens found in wallet')
+  }
+
+  // Calculate 1% of JAIL balance
+  const totalJailBalance = new Decimal(jailTokenAccount.amount.toString())
+  const onePercentJail = totalJailBalance.mul(0.01)
+  const inputAmount = new BN(onePercentJail.toFixed(0))
+  
+  console.log('Depositing 1% of JAIL balance:', {
+    totalBalance: totalJailBalance.div(10 ** poolInfo.mintB.decimals).toString(),
+    depositAmount: onePercentJail.div(10 ** poolInfo.mintB.decimals).toString(),
   })
-  const decimalAmount = new Decimal(uiInputAmount).mul(10 ** poolInfo.mintB.decimals)
-  const inputAmount = new BN(decimalAmount.toFixed(0))
+
   const slippage = new Percent(1, 100)
   const baseIn = false
 

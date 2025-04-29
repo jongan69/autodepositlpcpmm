@@ -1,5 +1,5 @@
-# .github/workflows/claim-fees.yml
-name: Deposit Liquidity to Raydium
+# .github/workflows/deposit-and-lock-cpmm-lp.yml
+name: Deposit and Lock Liquidity to Raydium CPMM LP
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # (manual trigger too)
 
 jobs:
-  deposit_liquidity:
+  deposit_and_lock_liquidity:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -21,7 +21,7 @@ jobs:
       - name: Install deps
         run: npm install
 
-      - name: Deposit liquidity
+      - name: Deposit and Lock Liquidity
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           RPC_URL: ${{ secrets.RPC_URL }}

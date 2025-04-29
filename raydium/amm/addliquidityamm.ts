@@ -12,12 +12,12 @@ import { isValidAmm } from './utils'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 import { PublicKey } from '@solana/web3.js'
-
+import { RAYDIUM_CPMM_POOL_ID } from '../../constants'
 export const addLiquidity = async () => {
     const raydium = await initSdk()
 
     // SOL-JAIL pool
-    const poolId = 'A9EZiPXEW4LxJjrV1skotkK1ovncEnEN78XmSsB54HXG'
+    const poolId = RAYDIUM_CPMM_POOL_ID
     let poolKeys: AmmV4Keys | AmmV5Keys | undefined
     let poolInfo: ApiV3PoolInfoStandardItem
 
@@ -35,7 +35,7 @@ export const addLiquidity = async () => {
 
     if (!isValidAmm(poolInfo.programId)) throw new Error('target pool is not AMM pool')
 
-    const inputAmount = '100000'
+    const inputAmount = '10000'
 
     const r = raydium.liquidity.computePairAmount({
         poolInfo,

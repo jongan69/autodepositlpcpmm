@@ -12,3 +12,5 @@ export const RAYDIUM_POOL_ADDRESSES = [
   "G2MRSjNjCbFUmMf32Z1aXYhy6pc1ihLyYg6orKedyjJG",
   "G2MRSjNjCbFUmMf32Z1aXYhy6pc1ihLyYg6orKedyjJG",
 ];
+
+export const RAYDIUM_CPMM_POOL_ID = "A9EZiPXEW4LxJjrV1skotkK1ovncEnEN78XmSsB54HXG"

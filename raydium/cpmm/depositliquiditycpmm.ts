@@ -3,12 +3,13 @@ import BN from 'bn.js'
 import { initSdk, txVersion } from '../config'
 import Decimal from 'decimal.js'
 import { isValidCpmm } from './utils'
+import { RAYDIUM_CPMM_POOL_ID } from '../../constants'
 
 export const deposit = async () => {
   const raydium = await initSdk()
 
   // JAIL - SOL pool
-  const poolId = 'A9EZiPXEW4LxJjrV1skotkK1ovncEnEN78XmSsB54HXG'
+  const poolId = RAYDIUM_CPMM_POOL_ID
   let poolInfo: ApiV3PoolInfoStandardItemCpmm
   let poolKeys: CpmmKeys | undefined
 

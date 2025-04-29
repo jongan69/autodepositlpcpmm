@@ -1,2 +1,1 @@
-# auto-rewards-claim
 # autodepositlpcpmm

@@ -1,11 +1,18 @@
-import { ApiV3PoolInfoStandardItemCpmm, CpmmKeys, Percent, getPdaPoolAuthority } from '@raydium-io/raydium-sdk-v2'
+import {
+  ApiV3PoolInfoStandardItemCpmm,
+  DEV_LOCK_CPMM_PROGRAM,
+  DEV_LOCK_CPMM_AUTH,
+  CpmmKeys,
+  Percent,
+  getPdaPoolAuthority
+} from '@raydium-io/raydium-sdk-v2'
 import BN from 'bn.js'
 import { initSdk, txVersion } from '../config'
 import Decimal from 'decimal.js'
 import { isValidCpmm } from './utils'
 import { RAYDIUM_CPMM_POOL_ID } from '../../constants'
 
-export const deposit = async () => {
+export const depositAndLockLiquidity = async () => {
   const raydium = await initSdk()
 
   // JAIL - SOL pool
@@ -14,8 +21,6 @@ export const deposit = async () => {
   let poolKeys: CpmmKeys | undefined
 
   if (raydium.cluster === 'mainnet') {
-    // note: api doesn't support get devnet pool info, so in devnet else we go rpc method
-    // if you wish to get pool info from rpc, also can modify logic to go rpc method directly
     const data = await raydium.api.fetchPoolById({ ids: poolId })
     poolInfo = data[0] as ApiV3PoolInfoStandardItemCpmm
     if (!isValidCpmm(poolInfo.programId)) throw new Error('target pool is not CPMM pool')
@@ -25,72 +30,62 @@ export const deposit = async () => {
     poolKeys = data.poolKeys
   }
 
+  // Step 1: Deposit Liquidity
   const uiInputAmount = '10000' // JAIL amount
   console.log('Pool Info:', {
     mintA: poolInfo.mintA,
     mintB: poolInfo.mintB,
-    decimals: poolInfo.mintB.decimals // Changed to mintB decimals
+    decimals: poolInfo.mintB.decimals
   })
-  const decimalAmount = new Decimal(uiInputAmount).mul(10 ** poolInfo.mintB.decimals) // Changed to mintB decimals
-  console.log('Calculated amount:', decimalAmount.toString())
+  const decimalAmount = new Decimal(uiInputAmount).mul(10 ** poolInfo.mintB.decimals)
   const inputAmount = new BN(decimalAmount.toFixed(0))
-  console.log('BN amount:', inputAmount.toString())
   const slippage = new Percent(1, 100)
-  const baseIn = false // Changed to false since we're depositing JAIL (mintB)
-
-  // computePairAmount is not necessary, addLiquidity will compute automatically,
-  // just for ui display
-  /*
-  const res = await raydium.cpmm.getRpcPoolInfos([poolId]);
-  const pool1Info = res[poolId];
-
-  const computeRes = await raydium.cpmm.computePairAmount({
-    baseReserve: pool1Info.baseReserve,
-    quoteReserve: pool1Info.quoteReserve,
-    poolInfo,
-    amount: uiInputAmount,
-    slippage,
-    baseIn,
-    epochInfo: await raydium.fetchEpochInfo()
-  });
-
-  computeRes.anotherAmount.amount -> pair amount needed to add liquidity
-  computeRes.anotherAmount.fee -> token2022 transfer fee, might be undefined if isn't token2022 program
-  */
-
-  const { execute } = await raydium.cpmm.addLiquidity({
-    poolInfo,
-    poolKeys,
-    inputAmount,
-    slippage,
-    baseIn,
-    txVersion,
-    // optional: set up priority fee here
-    // computeBudgetConfig: {
-    //   units: 600000,
-    //   microLamports: 46591500,
-    // },
-
-    // optional: add transfer sol to tip account instruction. e.g sent tip to jito
-    // txTipConfig: {
-    //   address: new PublicKey('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'),
-    //   amount: new BN(10000000), // 0.01 sol
-    // },
-  })
+  const baseIn = false
 
   try {
-    console.log('Executing transaction...')
-    const { txId } = await execute({ sendAndConfirm: true })
-    console.log('Transaction successful!')
-    console.log('Transaction ID:', `https://explorer.solana.com/tx/${txId}`)
+    console.log('Executing deposit transaction...')
+    const { execute: depositExecute } = await raydium.cpmm.addLiquidity({
+      poolInfo,
+      poolKeys,
+      inputAmount,
+      slippage,
+      baseIn,
+      txVersion,
+    })
+
+    const { txId: depositTxId } = await depositExecute({ sendAndConfirm: true })
+    console.log('Deposit successful!')
+    console.log('Deposit Transaction ID:', `https://explorer.solana.com/tx/${depositTxId}`)
+
+    // Step 2: Lock Liquidity
+    console.log('Fetching LP token balance...')
+    await raydium.account.fetchWalletTokenAccounts()
+    const lpBalance = raydium.account.tokenAccounts.find((a) => a.mint.toBase58() === poolInfo.lpMint.address)
+    if (!lpBalance) throw new Error(`No LP tokens found for pool: ${poolId}`)
+
+    console.log('Executing lock transaction...')
+    const { execute: lockExecute, extInfo } = await raydium.cpmm.lockLp({
+      // programId: DEV_LOCK_CPMM_PROGRAM, // devnet
+      // authProgram: DEV_LOCK_CPMM_AUTH, // devnet
+      // poolKeys, // devnet
+      poolInfo,
+      lpAmount: lpBalance.amount,
+      withMetadata: true,
+      txVersion,
+    })
+
+    const { txId: lockTxId } = await lockExecute({ sendAndConfirm: true })
+    console.log('LP tokens locked successfully!')
+    console.log('Lock Transaction ID:', `https://explorer.solana.com/tx/${lockTxId}`)
+    console.log('Additional Info:', extInfo)
+
   } catch (error) {
     console.error('Transaction failed:', error)
     if (error.logs) {
       console.error('Transaction logs:', error.logs)
     }
   }
-  // process.exit() // if you don't want to end up node execution, comment this line
 }
 
 /** uncomment code below to execute */
-// deposit()
+// depositAndLockLiquidity()

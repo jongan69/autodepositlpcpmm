@@ -1,5 +1,5 @@
 // import { addLiquidity } from "./raydium/addlp/amm/addliquidityamm";
-import { deposit } from "./raydium/cpmm/depositliquiditycpmm";
+import { depositAndLockLiquidity } from "./raydium/cpmm/depositliquiditycpmm";
 
 // Deposit liquidity to cpmm pool
-deposit()
+depositAndLockLiquidity()

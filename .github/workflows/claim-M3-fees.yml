@@ -1,0 +1,30 @@
+# .github/workflows/claim-fees.yml
+name: Deposit Liquidity to Raydium
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # every 2 hours
+  workflow_dispatch: # (manual trigger too)
+
+jobs:
+  deposit_liquidity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm install
+
+      - name: Deposit liquidity
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          RPC_URL: ${{ secrets.RPC_URL }}
+        run: |
+          echo "$PRIVATE_KEY" > keypair.json
+          npx tsx index.ts

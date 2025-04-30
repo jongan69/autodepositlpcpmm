@@ -8,7 +8,7 @@ dotenv.config();
 
 export const owner: Keypair = Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY!))
 export const connection = new Connection(process.env.RPC_URL!)
-// export const connection = new Connection(clusterApiUrl('devnet')) //<YOUR_RPC_URL>
+
 export const txVersion = TxVersion.V0 // or TxVersion.LEGACY
 const cluster = 'mainnet' // 'mainnet' | 'devnet'
 
@@ -17,7 +17,7 @@ export const initSdk = async (params?: { loadToken?: boolean }) => {
   if (raydium) return raydium
   if (connection.rpcEndpoint === clusterApiUrl('mainnet-beta'))
     console.warn('using free rpc node might cause unexpected error, strongly suggest uses paid rpc node')
-  console.log(`connect to rpc ${connection.rpcEndpoint} in ${cluster}`)
+  // console.log(`connect to rpc ${connection.rpcEndpoint} in ${cluster}`)
   raydium = await Raydium.load({
     owner,
     connection,
@@ -65,7 +65,7 @@ export const fetchTokenAccountData = async () => {
 export const grpcUrl = process.env.GRPC_URL!
 export const grpcToken = process.env.GRPC_TOKEN!
 
-export const fetchRaydiumLockedNft = async () => {
+export const fetchRaydiumLockedCpmmNft = async () => {
   const heliusUrl = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`
   const body = JSON.stringify({
     "jsonrpc": "2.0",
@@ -90,6 +90,37 @@ export const fetchRaydiumLockedNft = async () => {
   const RFKAssets = assets.filter((asset: any) => asset.content.metadata.symbol === 'RFK' && asset.content.metadata.name === 'Raydium Fee Key (CPMM)')
   const mintAddresses: string[] = []
   for (const asset of RFKAssets) {
+    const mintAddress = asset.id
+    mintAddresses.push(mintAddress as string)
+  }
+  return mintAddresses
+}
+
+export const fetchRaydiumLockedClmmNft = async () => {
+  const heliusUrl = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`
+  const body = JSON.stringify({
+    "jsonrpc": "2.0",
+    "id": "my-id",
+    "method": "searchAssets",
+    "params": {
+      "ownerAddress": owner.publicKey.toBase58(),
+      "tokenType": "all",
+      "limit": 1000
+    }
+  })
+  const response = await fetch(heliusUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body
+  })
+  const data = await response.json()
+  const assets = data.result.items
+  // console.log(assets)
+  const CLMMAssets = assets.filter((asset: any) => asset.content.metadata.symbol === 'RFK' && asset.content.metadata.name === 'Raydium Fee Key (CLMM)')
+  const mintAddresses: string[] = []
+  for (const asset of CLMMAssets) {
     const mintAddress = asset.id
     mintAddresses.push(mintAddress as string)
   }

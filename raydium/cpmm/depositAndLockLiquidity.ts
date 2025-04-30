@@ -5,7 +5,7 @@ import {
 import BN from 'bn.js'
 import { initSdk, txVersion } from '../config'
 import Decimal from 'decimal.js'
-import { isValidCpmm } from './utils'
+import { isValidCpmm } from '../utils'
 import { RAYDIUM_CPMM_POOL_ID } from '../../constants'
 
 export const depositAndLockLiquidity = async () => {

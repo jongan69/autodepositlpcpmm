@@ -2,8 +2,8 @@ import {
   ApiV3PoolInfoStandardItemCpmm,
   CpmmKeys,
 } from '@raydium-io/raydium-sdk-v2'
-import { initSdk, txVersion, fetchRaydiumLockedNft } from '../config'
-import { isValidCpmm } from './utils'
+import { initSdk, txVersion, fetchRaydiumLockedCpmmNft } from '../config'
+import { isValidCpmm } from '../utils'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { RAYDIUM_CPMM_POOL_ID } from '../../constants'
@@ -35,7 +35,7 @@ export const harvestAllRfkLP = async () => {
       throw new Error(`Failed to fetch pool info: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
 
-    const mintAddresses = await fetchRaydiumLockedNft()
+    const mintAddresses = await fetchRaydiumLockedCpmmNft()
     if (!mintAddresses || mintAddresses.length === 0) {
       console.log('No locked NFTs found to harvest')
       return

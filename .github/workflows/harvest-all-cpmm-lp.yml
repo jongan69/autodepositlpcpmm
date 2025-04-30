@@ -3,7 +3,7 @@ name: Harvest All Raydium CPMM LP
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # every 12 hours
+    - cron: '0 0 1 * *' # Run at midnight on the first day of every month
   workflow_dispatch: # (manual trigger too)
 
 jobs:

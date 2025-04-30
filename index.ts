@@ -1,5 +1,8 @@
-// import { addLiquidity } from "./raydium/addlp/amm/addliquidityamm";
-import { depositAndLockLiquidity } from "./raydium/cpmm/depositAndLockLiquidity";
+// import { depositAndLockLiquidity } from "./raydium/cpmm/depositAndLockLiquidity";
+// import { harvestAllRfkLP } from "./raydium/cpmm/harvestAllRfkLP";
 
 // Deposit liquidity to cpmm pool
-depositAndLockLiquidity()
+// depositAndLockLiquidity()
+
+// Harvest all CPMM RFK LP 
+// harvestAllRfkLP()

@@ -92,4 +92,4 @@ export const depositAndLockLiquidity = async () => {
 }
 
 /** uncomment code below to execute */
-// depositAndLockLiquidity()
+depositAndLockLiquidity()

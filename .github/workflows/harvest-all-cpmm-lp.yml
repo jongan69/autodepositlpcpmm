@@ -1,13 +1,13 @@
-# .github/workflows/deposit-and-lock-cpmm-lp.yml
-name: Deposit and Lock Liquidity to Raydium CPMM LP
+# .github/workflows/harvest-all-cpmm-lp.yml
+name: Harvest All Raydium CPMM LP
 
 on:
   schedule:
-    - cron: '0 */2 * * *' # every 2 hours
+    - cron: '0 */12 * * *' # every 12 hours
   workflow_dispatch: # (manual trigger too)
 
 jobs:
-  deposit_and_lock_liquidity:
+  harvest_all_cpmm_lp:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -21,10 +21,11 @@ jobs:
       - name: Install deps
         run: npm install
 
-      - name: Deposit and Lock Liquidity
+      - name: Harvest All Raydium CPMM LP
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           RPC_URL: ${{ secrets.RPC_URL }}
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
           echo "$PRIVATE_KEY" > keypair.json
-          npx tsx raydium/cpmm/depositAndLockLiquidity.ts
+          npx tsx raydium/cpmm/harvestAllRfkLP.ts

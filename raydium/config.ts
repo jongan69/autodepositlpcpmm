@@ -1,5 +1,5 @@
 import { Raydium, TxVersion, parseTokenAccountResp } from '@raydium-io/raydium-sdk-v2'
-import { Connection, Keypair, clusterApiUrl } from '@solana/web3.js'
+import { Connection, Keypair, clusterApiUrl, PublicKey } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import bs58 from 'bs58'
 import dotenv from "dotenv";
@@ -64,3 +64,34 @@ export const fetchTokenAccountData = async () => {
 
 export const grpcUrl = process.env.GRPC_URL!
 export const grpcToken = process.env.GRPC_TOKEN!
+
+export const fetchRaydiumLockedNft = async () => {
+  const heliusUrl = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`
+  const body = JSON.stringify({
+    "jsonrpc": "2.0",
+    "id": "my-id",
+    "method": "searchAssets",
+    "params": {
+      "ownerAddress": owner.publicKey.toBase58(),
+      "tokenType": "all",
+      "limit": 1000
+    }
+  })
+  const response = await fetch(heliusUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body
+  })
+  const data = await response.json()
+  const assets = data.result.items
+  // console.log(assets)
+  const RFKAssets = assets.filter((asset: any) => asset.content.metadata.symbol === 'RFK' && asset.content.metadata.name === 'Raydium Fee Key (CPMM)')
+  const mintAddresses: string[] = []
+  for (const asset of RFKAssets) {
+    const mintAddress = asset.id
+    mintAddresses.push(mintAddress as string)
+  }
+  return mintAddresses
+}
